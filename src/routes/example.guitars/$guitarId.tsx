@@ -1,4 +1,4 @@
-import { useCartProviderStore } from "@/store/cart";
+import { useStore } from "@/store/cart";
 import { useTRPC } from "@/trpc/react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
@@ -23,7 +23,12 @@ function RouteComponent() {
     })
   );
 
-  const { addToCart } = useCartProviderStore();
+  const { addToCart } = useStore();
+
+  const handleAddToCart = (id: number) => {
+    console.log("Add to cart", id);
+    addToCart(id);
+  };
 
   if (!guitar) {
     return (
@@ -49,8 +54,9 @@ function RouteComponent() {
             ${guitar.price}
           </div>
           <button
-            onClick={() => addToCart(guitar.id)}
-            className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-lg transition-colors"
+            onClick={() => handleAddToCart(guitar.id)}
+            type="button"
+            className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-lg transition-colors cursor-pointer"
           >
             Add to Cart
           </button>

@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { getAuth } from "@clerk/tanstack-start/server";
+import { getAuth } from "@clerk/tanstack-react-start/server";
 import { getWebRequest } from "vinxi/http";
 
 import { createTRPCRouter, publicProcedure } from "./init";
@@ -32,39 +32,47 @@ type Cart = {
 const cartsByUser = new Map<string, Cart>();
 
 const cartRouter = {
-  get: publicProcedure.query(async () => {
-    const { userId } = await getAuth(getWebRequest());
-    if (!userId) {
-      throw new TRPCError({
-        message: "User not found",
-        code: "UNAUTHORIZED",
-      });
-    }
+  get: publicProcedure
+    .query(async () => {
+      const { userId } = await getAuth(getWebRequest());
+      if (!userId) {
+        throw new TRPCError({
+          message: "User not found",
+          code: "UNAUTHORIZED",
+        });
+      }
 
-    return cartsByUser.get(userId) || { guitars: [] };
-  }),
-  add: publicProcedure.input(z.object({ id: z.number()})).mutation(async ({ input }) => {
-    const { userId } = await getAuth(getWebRequest());
-    if (!userId) {
-      throw new TRPCError({
-        message: "User not found",
-        code: "UNAUTHORIZED",
-      });
-    }
+      return cartsByUser.get(userId) || { guitars: [] };
+    }),
+  add: publicProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      const { userId } = await getAuth(getWebRequest());
 
-    const cart = cartsByUser.get(userId) || { guitars: [] };
+      if (!userId) {
+        throw new TRPCError({ code: "UNAUTHORIZED" });
+      }
+
+      let cart = cartsByUser.get(userId);
+
+      if (!cart) {
+        cartsByUser.set(userId, { guitars: [] });
+        cart = cartsByUser.get(userId);
+      }
+
+      const guitar = guitars.find((guitar) => guitar.id === input.id);
+
+      if (!guitar) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
     
-    const guitar = guitars.find((guitar) => guitar.id === input.id);
-    if (!guitar) {
-      throw new TRPCError({
-        message: "Guitar not found",
-        code: "NOT_FOUND",
-      });
-    }
+      if (!cart) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
 
-    cart.guitars.push(input.id);
-    return cart;
-  }),
+      cart.guitars.push(guitar.id);
+      return cart;
+    }),
 };
 
 export const trpcRouter = createTRPCRouter({

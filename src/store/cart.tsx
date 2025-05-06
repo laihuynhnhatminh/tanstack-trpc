@@ -54,7 +54,7 @@ export const CartStoreProvider = ({ children }: CartStoreProviderProps) => {
   );
 };
 
-export function useCartProviderStore() {
+export function useStore() {
   const context = useContext(CartStoreContext);
   if (!context) {
     throw new Error("useStore must be used within a CartStoreProvider");

@@ -1,3 +1,4 @@
+import Cart from "@/components/Cart";
 import {
   SignedIn,
   SignedOut,
@@ -9,6 +10,7 @@ export default function HeaderUser() {
   return (
     <>
       <SignedIn>
+        <Cart />
         <UserButton />
       </SignedIn>
       <SignedOut>
